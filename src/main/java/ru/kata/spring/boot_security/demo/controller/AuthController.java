@@ -27,22 +27,17 @@ public class AuthController {
     @GetMapping("/generateToken")
     public ResponseEntity<String> generateToken(@RequestParam("username") String username) {
         String token = jwtUtil.generateToken(username);
-        return ResponseEntity.ok("Bearer " + token);
+        return ResponseEntity.ok(token);
     }
 
     @GetMapping("/jwt")
     public ResponseEntity<String> authJwt(@RequestHeader("Authorization") String jwt) {
-        if (jwt.startsWith("Bearer ")) {
-            String token = jwt.substring(7);
+        String username = jwtUtil.extractUsername(jwt);
 
-            String username = jwtUtil.extractUsername(token);
-            if (jwtUtil.validateToken(token, username)) {
-                return ResponseEntity.ok("JWT Valid: " + token + " for user: " + username);
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid JWT token");
-            }
+        if (jwtUtil.validateToken(jwt, username)) {
+            return ResponseEntity.ok("JWT Valid: " + jwt + " for user: " + username);
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Authorization header must start with 'Bearer '");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid JWT token");
         }
     }
 }
